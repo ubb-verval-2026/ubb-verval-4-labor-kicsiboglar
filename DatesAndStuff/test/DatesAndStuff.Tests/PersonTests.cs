@@ -48,11 +48,11 @@ public class PersonTests
         sut.GotMarried("");
 
         // Act
-        var task = Task.Run(() => sut.GotMarried(""));
-        try { task.Wait(); } catch { }
+        Action act = () => sut.GotMarried("");
 
         // Assert
-        Assert.IsTrue(task.IsFaulted);
+        act.Should().Throw<Exception>();
+
     }
 
     [Test]

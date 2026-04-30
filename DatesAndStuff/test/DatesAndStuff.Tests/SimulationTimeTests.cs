@@ -1,3 +1,5 @@
+using FluentAssertions;
+
 namespace DatesAndStuff.Tests
 {
     public sealed class SimulationTimeTests
@@ -71,7 +73,7 @@ namespace DatesAndStuff.Tests
 
                 // Assert
                 var expectedDateTime = baseDate + ts;
-                Assert.AreEqual(expectedDateTime, result.ToAbsoluteDateTime());
+                expectedDateTime.Should().Be(result.ToAbsoluteDateTime());
             }
 
             [Test]
