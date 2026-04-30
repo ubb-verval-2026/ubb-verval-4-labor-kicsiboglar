@@ -14,7 +14,8 @@
 
         public void IncreaseSalary(double percentage)
         {
-            if (percentage <= -10)
+            // itt <= -10 volt
+            if (percentage < -10)
                 throw new ArgumentOutOfRangeException(nameof(percentage));
 
             this.Salary = this.Salary * (1 + percentage / 100);

@@ -65,11 +65,11 @@
 
     }
 
-
+    // itt a probléma: -10 benne van a rangeben, de a personnal már nem engedi, ezért nem frissül.
     public class FormModel
     {
         [Required(ErrorMessage = "Percentage should be specified")]
-        [Range(-10d, Double.MaxValue, ErrorMessage = "The specified percentag should be between -10 and infinity.")]
+        [Range(-11d, Double.MaxValue, ErrorMessage = "The specified percentag should be between -9 and infinity.")]
         public double SalaryIncreasePercentage { get; set; } = 0;
     }
 }
