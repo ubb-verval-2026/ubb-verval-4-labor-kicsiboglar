@@ -107,6 +107,61 @@ public class PersonPageTests
         // Arrange
         driver.Navigate().GoToUrl(BaseURL);
         driver.Navigate().Refresh();
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+        try
+        {
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='PersonPageNavigation']")))
+                .Click();
+
+            wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            var input = wait.Until(
+                ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            input.Clear();
+
+            input = wait.Until(
+                ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            input.SendKeys(percentage.ToString());
+        }
+        catch (StaleElementReferenceException e)
+        {
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='PersonPageNavigation']")))
+                .Click();
+
+            wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            var input = wait.Until(
+                ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            input.Clear();
+
+            input = wait.Until(
+                ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+            input.SendKeys(percentage.ToString());
+        }
+        finally
+        {
+            var salaryLabel =
+                wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-test='DisplayedSalary']")));
+            var originalSalary = double.Parse(salaryLabel.Text);
+            var expectedSalary = originalSalary + (originalSalary * (percentage / 100.0));
+
+            // Act
+            var submitButton =
+                wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']")));
+            submitButton.Click();
+
+            // Assert
+            var salaryAfterSubmissionLabel =
+                wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-test='DisplayedSalary']")));
+            var salaryAfterSubmission = double.Parse(salaryAfterSubmissionLabel.Text);
+            salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
+        }
+    }
+        
+    [Test]
+    public void Person_InvalidSalaryDecrease_ShouldAlert()
+    {
+        // Arrange
+        driver.Navigate().GoToUrl(BaseURL);
+        driver.Navigate().Refresh();
         driver.FindElement(By.XPath("//*[@data-test='PersonPageNavigation']")).Click();
 
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
@@ -114,21 +169,19 @@ public class PersonPageTests
         var input = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
         input.Clear();
         
-        input.SendKeys(percentage.ToString());
-        var salaryLabel = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-test='DisplayedSalary']")));
-        var originalSalary = double.Parse(salaryLabel.Text);
-        var expectedSalary = originalSalary + (originalSalary * (percentage / 100.0));
-        
+        input.SendKeys("-20");
+
         // Act
         var submitButton = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']")));
         submitButton.Click();
 
 
         // Assert
-        var salaryAfterSubmissionLabel = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-test='DisplayedSalary']")));
-        var salaryAfterSubmission = double.Parse(salaryAfterSubmissionLabel.Text);
-        salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
+
+        var errorMessages = wait.Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//*[@class='validation-message']"))).ToList();
+        errorMessages.Should().HaveCount(2);
     }
+    
     private bool IsElementPresent(By by)
     {
         try
